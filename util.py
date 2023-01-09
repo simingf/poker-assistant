@@ -95,12 +95,12 @@ def evaluate_hand(hand):
             straight = True
             if i == 10:
                 royal = True
-    
+
     if royal and flush and straight:
         return 9
     elif flush and straight:
         return 8
-    
+
     for card in numbers:
         if numbers.count(card) == 4:
             return 7
@@ -108,13 +108,13 @@ def evaluate_hand(hand):
             for card2 in numbers:
                 if numbers.count(card2) == 2:
                     return 6
-    
+
     if flush:
         return 5
 
     if straight:
         return 4
-    
+
     for card in numbers:
         if numbers.count(card) == 3:
             return 3
@@ -123,7 +123,7 @@ def evaluate_hand(hand):
                 if numbers.count(card2) == 2 and card != card2:
                     return 2
             return 1
-    
+
     return 0
 
 def to_num(card):
@@ -151,6 +151,3 @@ if __name__ == "__main__":
     print(best_hand(["3h", "3d", "7c", "Jh", "6h", "6d", "8c"]))
     print(best_hand(["3h", "3d", "7c", "Jh", "6h", "9d", "8c"]))
     print(best_hand(["2h", "3d", "7c", "Jh", "6h", "9d", "8c"]))
-
-    
-    
