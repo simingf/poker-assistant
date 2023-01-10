@@ -21,7 +21,7 @@ def num_of_straight_flush(char):
         return 4
     return 5
 
-def num_of_flushes(char):
+def num_of_straights(char):
     if (char == 'K'):
         return 1
     elif (char == 'A' or char == 2 or char == 'Q'):
@@ -119,9 +119,44 @@ def get_hand_probabilities(hand):
         res+=2*math.comb(47,2)/total_combinations
     answers.append(res)
 
-    # Full house
+    # TODO: Full house
     res = 0
+
+    # case 1: pair in hand
+    if hand[0][0] == hand[1][0]:
+        # form the 3 using hand
+        res += 2 * 12 * math.comb(4,2) * 44 * 40 / (2 * total_combinations)
+        # use hand as pair
+        res += 12 * 4 * 44 * 40 / (2*total_combinations)
+    else:
+        # only using river
+        res += 11 * 4 * 10 * math.comb(4,2) / total_combinations
+        # only using 1 card for 3
+        res += 3 * 11 * math.comb(4,2) * 40 / total_combinations
+        # only using 1 card for pair
+        res += 3 * 11 * 4 * 40 / total_combinations
+        # use one card for 3, one card for pair
+        res += 2 * 3 * 3 * 44 * 40 / (2* total_combinations)
+
+    answers.append(res)
+
     # Flush
+    res = 0
+    # if both cards in hand have the same suit
+    if hand[0][1] == hand[1][1]:
+        # only use river cards
+        res += 4 * math.comb(13,5) / total_combinations
+        # use cards in hand
+        res += math.comb(11,3) * math.comb(47,2) / total_combinations
+    # cards in have have different suit
+    else:
+        # only use river cards
+        res += 2 * math.comb(13,5) / total_combinations
+        # use cards in hand
+        res += 2 * 46 / total_combinations
+    answers.append(res)
+
+    # Straight
     res = 0
     case = 0
     zone1 = in_high_special_zone(hand[0])
@@ -139,26 +174,83 @@ def get_hand_probabilities(hand):
     if case == 1:
         res+= (3*9 + 9 - max_nums)/total_combinations
         # same suit
-        max_nums = max(num_of_straight_flushes(hand[0][0]),num_of_straight_flushes(hand[1][0]))
+        max_nums = max(num_of_straight_straightshand[0][0]),num_of_straight_straights(hand[1][0]))
         res += (max_nums * math.comb(47,2))/total_combinations
 
     # case 2: in different special zones or only one in special zone
+    # or case 3: neither in special zones
     if case == 2:
-        num1 = num_of_flushes(hand[0])
-        num2 = num_of_flushes(hand[1])
+        num1 = num_of_straights(hand[0])
+        num2 = num_of_straights(hand[1])
         # only use river cards
-        res+=(10-num1-num2)
-
-    # case 3: neither in special zones
-    if case == 3:
+        res+= (10-num1-num2) * (4**5)/total_combinations
+        # use cards
+        res+= (num1+num2) * (4**4) * 46 / total_combinations
 
     # minus straight flush and royal flush probability
     res -= answers[1]
     res -= answers[0]
     answers.append(res)
 
+    # 3 of a kind
+    res = 0
+    # case 1: cards in hand have the same number
+    if hand[0][0] == hand[1][0]:
+        # only use river cards:
+        res += 12 * math.comb(47,2) / total_combinations
+        # use cards in hand:
+        res += 2* math.comb(49, 4) / total_combinations
+    # case 2: cards in hand have different number
+    else:
+        # only use river cards:
+        res += 12 * math.comb(47,2) / total_combinations
+        # use cards in hand:
+        res += 2 * math.comb(3,2) * math.comb(48,3) / total_combinations
+
+    # subtract 4 of a kind probability
+    res-=answers[2]
+    answers.append(res)
+
+    # 2 pair
+    res = 0
+    # case 1: have pair in hand
+    if hand[0][0] == hand[1][0]:
+        res = 12 * math.comb(4,2) * math.comb(46,3) / total_combinations
+    # case 2: don't have pair in hand
+    else:
+        # only using river cards
+        res += math.comb(11,2) * math.comb(4,2) * math.comb(4,2) * 42 / total_combinations
+        # use one card in hand
+        res += 2 * 3 * 11 * math.comb(4,2) * math.comb(43,2) / total_combinations
+        # use both cards in hand
+        res += 3 * 3 * math.comb(44,3) / total_combinations
+
+    # subtract 4 of a  kind
+    res -= answers[2]
+    answers.append(res)
+    # 1 pair
+    res = 0
+    # case 1: hand is pair
+    if hand[0][0] == hand[1][0]:
+        # river cards don't have a pair
+        res = 48 * 44 * 40 * 36 * 32 / (total_combinations * 120)
+    # case 2: hand is not pair
+    else:
+        # only use river cards
+        res += 11 * math.comb(4,2) * 40 * 36 * 32 / (total_combinations * 6)
+        # use one of the hand cards
+        res += 2 * 3 * 44 * 40 * 36 * 32 / (total_combinatnions * 24)
+    answers.append(res)
+
+    # high card
+    res = 0
+    if not (hand[0][0] == hand[1][0]):
+        res = 44 * 40 * 36 * 32 * 28 / (total_combinations * 120)
+    answers.append(res)
+
 
 """
+
 def get_hand_probabilities(hand, river):
     answers = []
     cards = hand + river
