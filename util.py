@@ -1,6 +1,17 @@
 import itertools
+import math
+from starting import get_hand_probabilities
 
 hands = {0: "High Card", 1: "Pair", 2: "Two Pair", 3: "Three of a Kind", 4: "Straight", 5: "Flush", 6: "Full House", 7: "Four of a Kind", 8: "Straight Flush", 9: "Royal Flush"}
+
+def print_probs_0(hand):
+    probs = get_probs_0(hand)
+    for i in range(10):
+        # if probs[i] == 0:
+        #     continue
+        # else:
+        print(hands[i] + ": " + str(round(probs[i] * 100, 2)) + "%")
+    print()
 
 def print_probs_3(hand, river):
     probs = get_probs_3(hand, river)
@@ -28,6 +39,119 @@ def print_probs_5(hand, river):
         else:
             print(hands[i] + ": " + str(round(probs[i] * 100, 2)) + "%")
     print()
+
+def get_probs_0(hand):
+    num_1 = to_num(hand[0][0])
+    num_2 = to_num(hand[1][0])
+    ace_1 = 1 if num_1 == 14 else num_1
+    ace_2 = 1 if num_2 == 14 else num_2
+    suit_1 = hand[0][1]
+    suit_2 = hand[1][1]
+    num_pair = (num_1 == num_2)
+    suit_pair = (suit_1 == suit_2)
+
+    total = math.comb(50, 5)
+
+    # royal flush
+    nums = [10, 11, 12, 13, 14]
+    if num_1 in nums and num_2 in nums and num_1 != num_2:
+        if suit_pair:
+            royal_flush = 3 + math.comb(47, 2)
+        else:
+            royal_flush = 2 + 2 * 46
+    elif num_1 in nums and num_2 in nums and num_pair:
+        royal_flush = 2 + 2 * 46
+    elif num_1 in nums or num_2 in nums:
+        royal_flush = 3 + 46
+    else:
+        royal_flush = 4
+    
+    # straight flush
+    straight_flush = 0
+    for i in range(1, 11):
+        nums = [i, i+1, i+2, i+3, i+4]
+        if (num_1 in nums or ace_1 in nums) and (num_2 in nums or ace_2 in nums):
+            if suit_1 == suit_2:
+                straight_flush += 3 + math.comb(47, 2)
+            else:
+                straight_flush += 2 + 2 * 46
+        elif (num_1 in nums or ace_1 in nums) or (num_2 in nums or ace_2 in nums):
+            straight_flush += 3 + 46
+        else:
+            straight_flush += 4
+
+    # 4 of a kind
+    if num_pair:
+        four_of_a_kind = 12 * 46 + math.comb(48, 3)
+    else:
+        four_of_a_kind = 11 * 46 + 2 * math.comb(47, 2)
+
+    # full house
+    if num_pair:
+        full_house = 2 * 12 * math.comb(4, 2) * 44 * 40 / 2
+        full_house += 12 * 4 * 44 * 40 / 2
+    else:
+        full_house = 11 * 4 * 10 * math.comb(4, 2)
+        full_house += 3 * 11 * math.comb(4, 2) * 40
+        full_house += 3 * 11 * 4 * 40
+        full_house += 2 * 3 * 3 * 44 * 40 / 2
+
+    # flush
+    if suit_pair:
+        flush = 3 * math.comb(13, 5)
+        flush += math.comb(11, 3) * math.comb(39, 2)
+    else:
+        flush = 2 * math.comb(13, 5)
+        flush += 2 * math.comb(12, 4) * 38
+
+    # straight
+    straight = 0
+    for i in range(1, 11):
+        nums = [i, i+1, i+2, i+3, i+4]
+        if (num_1 in nums or ace_1 in nums) and (num_2 in nums or ace_2 in nums):
+            straight += 3 * 3 * 4 * 4 * 4
+            straight += 3 * 4 * 4 * 4 * 46
+            straight += 4 * 4 * 4 * 47 * 46 / 2
+        elif (num_1 in nums or ace_1 in nums) or (num_2 in nums or ace_2 in nums):
+            straight += 3 * 4 * 4 * 4 * 4
+            straight += 4 * 4 * 4 * 4 * 46
+        else:
+            straight += 4 * 4 * 4 * 4 * 4
+    straight -= straight_flush
+
+    # 3 of a kind
+    if num_pair:
+        three_of_a_kind = 12 * 4 * 44 * 40 / 2
+        three_of_a_kind += math.comb(4, 2) * 48 * 44 * 40 * 36 / (4 * 3 * 2)
+    else:
+        three_of_a_kind = 11 * 4 * 40 * 36 / 2
+        three_of_a_kind += 2 * 3 * 44 * 40 * 36 / (3 * 2)
+
+    # 2 pair
+    if num_pair:
+        two_pair = math.comb(12, 2) * math.comb(4, 2) * math.comb(4, 2) * 40
+        two_pair += 12 * math.comb(4, 2) * 44 * 40 * 36 / (3 * 2)
+    else:
+        two_pair = math.comb(11, 2) * math.comb(4, 2) * math.comb(4, 2) * 36
+        two_pair += 2 * 3 * 11 * math.comb(4, 2) * 40 * 36 / 2
+        two_pair += 3 * 3 * 11 * math.comb(4, 2) * 40
+        two_pair += 3 * 3 * 44 * 40 * 36 / (3 * 2)
+
+    # pair
+    if num_pair:
+        pair = 48 * 44 * 40 * 36 * 32 / (5 * 4 * 3 * 2)
+    else:
+        pair = 2 * 3 * 44 * 40 * 36 * 32 / (4 * 3 * 2)
+
+    # high card
+    if num_pair:
+        high_card = 0
+    else:
+        high_card = 44 * 40 * 36 * 32 * 28 / (5 * 4 * 3 * 2)
+    
+    probs = [high_card, pair, two_pair, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, royal_flush]
+    probs = [i / total for i in probs]
+    return probs
 
 def get_probs_3(hand, river):
     count = 0

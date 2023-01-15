@@ -9,7 +9,7 @@ def play_round():
         return player_hand
     river = []
     print_state(player_hand, river)
-    #print starting probs
+    print_probs_0(player_hand)
     new_cards = get_cards("Enter the first 3 cards of the river", 3)
     if new_cards == 'q' or new_cards == 'n':
         return new_cards

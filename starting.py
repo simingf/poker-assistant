@@ -1,16 +1,16 @@
 import math
 
 def in_high_special_zone(card):
-    if card[0] > 0:
+    if int(card[0][0]) > 0:
         return True
     return False
 
 def in_low_special_zone(card):
-    if card[0] < 5:
+    if int(card[0][0]) < 5:
         return True
     return False
 
-def num_of_straight_flush(char):
+def num_of_straight_flushes(char):
     if (char == 'A' or char == 'K'):
         return 1
     elif (char == 2 or char == 'Q'):
@@ -35,29 +35,33 @@ def num_of_straights(char):
 
 """ only for when we have no cards in the river """
 def get_hand_probabilities(hand):
-    suits = ['c','d','h','s']
     answers = []
-    total_combinations = math.comb(49,7)
-    # Royal flush
+    total_combinations = math.comb(50,5)
+
+    # Royal flush   
     res = 0
     # case 1: both cards are 9 or below
-
-    if  1<=hand[0][0]<=9 and 1<=hand[1][0]<=9:
+    first = int(hand[0][0])
+    second = int(hand[1][0])
+    if  1<=first<=9 and 1<=second<=9:
         res = (4/total_combinations)
     # case 2: one card is above 9
-    elif (1<=hand[0][0]<=9 and not(1<=hand[1][0]<=9)) or (not(1<=hand[0][0]<=9) and 1<=hand[1][0]<=9):
+    elif (1<=first<=9 and not(1<=second<=9)) or (not(1<=first<=9) and 1<=second<=9):
         #probability that we use another suit
         res += (3/total_combinations)
         #probability that we use the suit
-        res += (49/total_combinations)
+        res += (46/total_combinations)
     # case 3: both cards are above 9
     else:
         # same suit
         if hand[0][1] == hand[1][1]:
             #we get it in another suit
-            res += 3/total_combinations
+            res += 3 / total_combinations
             #we get it in the same suit
-            res += math.comb(49,2)/ total_combinations
+            res += math.comb(47,2) / total_combinations
+        # different suits
+        else:
+            res += 2 * 48 / total_combinations
     answers.append(res)
 
 
@@ -72,7 +76,7 @@ def get_hand_probabilities(hand):
         case = 1
     elif (zone1 and zone4) or (zone2 and zone3):
         case = 2
-    elif (zone1 and zone2 and (not (zone3 or zone4))) or (zone3 and zone4 and (not (zone 1 or zone2))):
+    elif (zone1 and zone2 and (not (zone3 or zone4))) or (zone3 and zone4 and (not (zone1 or zone2))):
         case = 3
     else:
         case = 4
@@ -83,7 +87,7 @@ def get_hand_probabilities(hand):
             # we get it only using river cards
             res+= (3*9 + 9 - max_nums)/total_combinations
             # same suit
-            max_nums = max(num_of_straight_flushes(hand[0][0]),num_of_straight_flushes(hand[1][0]))
+            max_nums = max(num_of_straight_flushes(hand[0][0]), num_of_straight_flushes(hand[1][0]))
             res += (max_nums * math.comb(47,2))/total_combinations
         else:
             case = 2
@@ -119,7 +123,7 @@ def get_hand_probabilities(hand):
         res+=2*math.comb(47,2)/total_combinations
     answers.append(res)
 
-    # TODO: Full house
+    # Full house
     res = 0
 
     # case 1: pair in hand
@@ -172,9 +176,9 @@ def get_hand_probabilities(hand):
 
     # case 1: both in same special zone
     if case == 1:
-        res+= (3*9 + 9 - max_nums)/total_combinations
+        max_nums = max(num_of_straights(hand[0][0]),num_of_straights(hand[1][0]))
+        res += (3 * 9 + 9 - max_nums) / total_combinations
         # same suit
-        max_nums = max(num_of_straight_straightshand[0][0]),num_of_straight_straights(hand[1][0]))
         res += (max_nums * math.comb(47,2))/total_combinations
 
     # case 2: in different special zones or only one in special zone
@@ -239,7 +243,7 @@ def get_hand_probabilities(hand):
         # only use river cards
         res += 11 * math.comb(4,2) * 40 * 36 * 32 / (total_combinations * 6)
         # use one of the hand cards
-        res += 2 * 3 * 44 * 40 * 36 * 32 / (total_combinatnions * 24)
+        res += 2 * 3 * 44 * 40 * 36 * 32 / (total_combinations * 24)
     answers.append(res)
 
     # high card
@@ -247,6 +251,8 @@ def get_hand_probabilities(hand):
     if not (hand[0][0] == hand[1][0]):
         res = 44 * 40 * 36 * 32 * 28 / (total_combinations * 120)
     answers.append(res)
+
+    return answers
 
 
 """
